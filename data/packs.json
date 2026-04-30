@@ -1,0 +1,62 @@
+{
+  "sv151": {
+    "name": "SV-151 Pack",
+    "cost": 1,
+    "exclusive": true,
+    "bias_exponent": 0.6,
+    "description": "Real SV-151 opening sim. Pull rates match actual product.",
+    "ev_label": "~86%",
+    "tiers": {
+      "Common":    { "min": 0.05, "max": 0.50, "odds": 0.80 },
+      "Holo":      { "min": 0.50, "max": 3.00, "odds": 0.12 },
+      "Ex":        { "min": 3.00, "max": 7.00, "odds": 0.05 },
+      "Full Art":  { "min": 7.00, "max": 15.00,"odds": 0.02 },
+      "SAR":       { "min": 15.00,"max": 50.00,"odds": 0.008 },
+      "Grail":     { "min": 50.00,"max": 999.00,"odds":0.002 }
+    }
+  },
+  "starter": {
+    "name": "Pokémon Starter Pack",
+    "cost": 1,
+    "bias_exponent": 0.5,
+    "description": "Nearly break-even. Best value for new rippers.",
+    "ev_label": "~93%",
+    "tiers": {
+      "Common":    { "min": 0.20, "max": 1.00, "odds": 0.601 },
+      "Rare":      { "min": 1.00, "max": 2.00, "odds": 0.289 },
+      "Epic":      { "min": 2.00, "max": 3.00, "odds": 0.091 },
+      "Legendary": { "min": 3.00, "max": 4.00, "odds": 0.016 },
+      "Grail":     { "min": 4.00, "max": 20.00,"odds": 0.003 }
+    }
+  },
+  "basic": {
+    "name": "Pokémon Basic Pack",
+    "cost": 5,
+    "bias_exponent": 0.7,
+    "description": "Main pack. Solid odds across all rarities.",
+    "ev_label": "~89%",
+    "tiers": {
+      "Common":    { "min": 1.00, "max": 2.00, "odds": 0.176 },
+      "Uncommon":  { "min": 2.00, "max": 5.00, "odds": 0.324 },
+      "Rare":      { "min": 5.00, "max": 6.00, "odds": 0.237 },
+      "Epic":      { "min": 6.00, "max": 7.00, "odds": 0.139 },
+      "Legendary": { "min": 7.00, "max": 9.00, "odds": 0.103 },
+      "Grail":     { "min": 9.00, "max": 100.00,"odds":0.021 }
+    }
+  },
+  "signature": {
+    "name": "Pokémon Signature Pack",
+    "cost": 10,
+    "bias_exponent": 0.3,
+    "description": "Premium tier. High value with chase potential.",
+    "ev_label": "~85%",
+    "tiers": {
+      "Common":    { "min": 3.00, "max": 5.00, "odds": 0.341 },
+      "Uncommon":  { "min": 5.00, "max": 10.00,"odds": 0.159 },
+      "Rare":      { "min": 10.00,"max": 15.00,"odds": 0.427 },
+      "Epic":      { "min": 15.00,"max": 20.00,"odds": 0.061 },
+      "Legendary": { "min": 20.00,"max": 25.00,"odds": 0.010 },
+      "Grail":     { "min": 25.00,"max": 200.00,"odds":0.002 }
+    }
+  }
+}
