@@ -27,7 +27,7 @@ a{color:var(--teal);text-decoration:none}
   background:linear-gradient(180deg,rgba(8,10,15,0.95) 0%,rgba(8,10,15,0.85) 100%);backdrop-filter:blur(16px)}
 .topbar-inner{width:100%;max-width:var(--max-w);padding:0 20px;display:flex;align-items:center;justify-content:space-between}
 .topbar-brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:16px}
-.topbar-brand img{width:28px;height:28px;border-radius:6px;background:#fff;object-fit:contain}
+.topbar-brand img{width:28px;height:28px;border-radius:6px;background:transparent;object-fit:contain}
 .balance-pill{display:flex;align-items:center;gap:0;background:linear-gradient(135deg,#1a3a2a,#0d2818);border:1px solid rgba(0,200,83,0.3);border-radius:20px;padding:0;overflow:hidden}
 .balance-pill .amt{padding:8px 12px;font-weight:700;font-size:14px;color:var(--green);font-family:'JetBrains Mono',monospace}
 .balance-pill .plus{width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:var(--green);color:#000;font-size:20px;font-weight:700;border-radius:0 18px 18px 0;cursor:pointer}
@@ -78,7 +78,7 @@ select.input{appearance:none;cursor:pointer}
 .pack-basic .pack-bg{background:linear-gradient(135deg,#1a2a1a,#2d4a2d,#1a3a1a)}
 .pack-signature .pack-bg{background:linear-gradient(135deg,#2a1a0a,#4a2a0a,#3a1a00)}
 .pack-logo-area{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:12px}
-.pack-logo-area img{width:60px;height:60px;border-radius:12px;background:#fff;object-fit:contain}
+.pack-logo-area img{width:60px;height:60px;border-radius:12px;background:transparent;object-fit:contain}
 .pack-logo-area .pack-label{color:rgba(255,255,255,0.5);font-size:11px;text-transform:uppercase;letter-spacing:0.15em;font-weight:700}
 .pack-logo-area .pack-icon{width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center}
 .pack-name{font-size:20px;font-weight:800;text-align:center;margin-bottom:4px}
@@ -167,7 +167,7 @@ select.input{appearance:none;cursor:pointer}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .modal-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:12px auto 0}
 .modal-head{display:flex;align-items:center;gap:12px;padding:20px 24px 16px}
-.modal-head img{width:40px;height:40px;border-radius:10px;background:#fff;object-fit:contain}
+.modal-head img{width:40px;height:40px;border-radius:10px;background:transparent;object-fit:contain}
 .modal-head .sub{font-size:13px;color:var(--text2)}.modal-head .title{font-size:20px;font-weight:800}
 .modal-body{padding:0 24px}
 .guarantee{background:var(--bg3);border-radius:12px;padding:16px;margin-bottom:20px}
@@ -186,7 +186,7 @@ select.input{appearance:none;cursor:pointer}
 .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;
   background:radial-gradient(ellipse at 50% 0%,rgba(29,233,182,0.06) 0%,transparent 60%)}
 .login-card{width:100%;max-width:340px;text-align:center}
-.login-card img{width:72px;height:72px;border-radius:16px;background:#fff;object-fit:contain;margin-bottom:16px}
+.login-card img{width:72px;height:72px;border-radius:16px;background:transparent;object-fit:contain;margin-bottom:16px}
 .login-card .brand{font-size:28px;font-weight:800;margin-bottom:4px}
 .login-card .sub{color:var(--text2);font-size:13px;margin-bottom:32px}
 .login-error{background:rgba(255,23,68,0.1);border:1px solid rgba(255,23,68,0.3);color:var(--red);padding:10px;border-radius:10px;font-size:12px;margin-bottom:14px}
@@ -252,7 +252,7 @@ const IconAdmin=()=>React.createElement('svg',{viewBox:'0 0 24 24'},React.create
 function LoginPage({onLogin}){const[u,setU]=useState('');const[p,setP]=useState('');const[err,setErr]=useState('');const[ld,setLd]=useState(false);
 const go=async()=>{if(!u||!p)return;setLd(true);setErr('');try{const d=await post('/login',{username:u,password:p});localStorage.setItem('token',d.token);onLogin(d.user)}catch(e){setErr(e.message)}setLd(false)};
 return(<div className="login-wrap"><div className="login-card">
-  <img src="/logo.png" alt="K2"/><div className="brand">K2 Collection</div><div className="sub">POP Card</div>
+  <img src="/logo-lg.png" alt="K2"/><div className="brand">K2 Collection</div><div className="sub">POP Card</div>
   {err&&<div className="login-error">{err}</div>}
   <div className="field"><input className="input" placeholder="Username" value={u} onChange={e=>setU(e.target.value)} onKeyDown={e=>e.key==='Enter'&&go()}/></div>
   <div className="field"><input className="input" type="password" placeholder="Password" value={p} onChange={e=>setP(e.target.value)} onKeyDown={e=>e.key==='Enter'&&go()}/></div>
