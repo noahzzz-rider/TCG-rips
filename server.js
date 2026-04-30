@@ -35,8 +35,15 @@ function reloadData() {
 // ===========================================================================
 // Database
 // ===========================================================================
-const DB_DIR = process.env.RAILWAY_VOLUME_MOUNT_PATH || path.join(__dirname, 'data');
+// Database location: use /data (Railway Volume) if it exists, otherwise local
+const VOLUME_PATH = '/data';
+const DB_DIR = fs.existsSync(VOLUME_PATH) ? VOLUME_PATH : path.join(__dirname, 'dbdata');
 if (!fs.existsSync(DB_DIR)) fs.mkdirSync(DB_DIR, { recursive: true });
+console.log('=== DATABASE CONFIG ===');
+console.log('Volume /data exists:', fs.existsSync(VOLUME_PATH));
+console.log('RAILWAY_VOLUME_MOUNT_PATH env:', process.env.RAILWAY_VOLUME_MOUNT_PATH || '(not set)');
+console.log('DB location:', path.join(DB_DIR, 'tcg.db'));
+console.log('=======================');
 const db = new Database(path.join(DB_DIR, 'tcg.db'));
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
