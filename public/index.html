@@ -207,7 +207,8 @@ return(<div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&on
 function RevealPage({pull,onAction,onBack}){
 const[flipped,setFlipped]=useState(false);const[done,setDone]=useState(false);const[imgErr,setImgErr]=useState(false);const toast=useToast();const c=pull.card;
 const act=async(a)=>{if(done)return;setDone(true);try{const r=await post('/pull/'+pull.pullId+'/action',{action:a});if(a==='keep')toast('📥 Saved to collection!','keep');else toast('💰 +$'+r.sellCredit.toFixed(2)+' credited','sell');onAction(r)}catch(e){toast(e.message,'error');setDone(false)}};
-return(<div className="page"><div className="reveal-wrap">
+const revealBg=flipped?'revealed-'+rarityCls(c.rarity).replace('rc-',''):'';
+return(<div className="page"><div className={'reveal-wrap '+revealBg}>
   <div className={'flip-container '+(flipped?glowCls(c.rarity):'')} onClick={()=>!flipped&&setFlipped(true)}>
     <div className={'flip-card'+(flipped?' flipped':'')}>
       <div className="flip-face flip-back"><div className="flip-back-inner"><img src="/logo.png" alt="K2"/><div>K2 Collection</div></div></div>
@@ -277,10 +278,16 @@ return(<div className="page"><div className="page-scroll">
     return(<div key={it.id} className={'vault-card '+rc+(isPSA?' psa':'')}>
     <div className="card-img-wrap" data-grade={isPSA?it.card_name.match(/PSA \d+/)?.[0]||'PSA':''}>
       <img src={it.card_img} alt={it.card_name} onError={e=>{e.target.style.display='none'}}/>
-      <span className={'rarity-tag '+rt}>{it.card_rarity||'Common'}</span>
+      {isPSA&&<div className="slab-inner"/>}
     </div>
-    <div className="vault-card-info"><div className="price">${it.card_value.toFixed(2)}</div><div className="name">{it.card_name}</div>
-    <div className={'vault-status st-'+(it.ship_status||'pending')}>{it.ship_status||'pending'}</div></div>
+    <div className="vault-card-info">
+      <div className="price">${it.card_value.toFixed(2)}</div>
+      <div className="name">{it.card_name}</div>
+      <div style={{display:'flex',gap:6,alignItems:'center',marginTop:4,flexWrap:'wrap'}}>
+        <span className={'rarity-tag '+rt}>{it.card_rarity||'Common'}</span>
+        <div className={'vault-status st-'+(it.ship_status||'pending')}>{it.ship_status||'pending'}</div>
+      </div>
+    </div>
   </div>)})}</div>}
   <div className="collection-notice">Vaulted cards will be <strong>automatically sold after 7 days</strong> at fair market value unless shipped.</div>
 </div></div>)}
