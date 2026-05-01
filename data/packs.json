@@ -1,0 +1,208 @@
+{
+  "starter": {
+    "name": "Starter Pack",
+    "cost": 1,
+    "pool": "general",
+    "category": "regular",
+    "volatility": "Normal",
+    "bias_exponent": 0.5,
+    "description": "Nearly break-even. Best value for new rippers.",
+    "ev_label": "~105%",
+    "free_eligible": true,
+    "tiers": {
+      "Common":    { "min": 0.01, "max": 1.00, "odds": 0.600 },
+      "Rare":      { "min": 1.00, "max": 2.00, "odds": 0.289 },
+      "Epic":      { "min": 2.00, "max": 3.00, "odds": 0.091 },
+      "Legendary": { "min": 3.00, "max": 4.00, "odds": 0.016 },
+      "Grail":     { "min": 4.00, "max": 20.00, "odds": 0.003 }
+    }
+  },
+  "basic_normal": {
+    "name": "Basic Pack",
+    "cost": 5,
+    "pool": "general",
+    "category": "regular",
+    "volatility": "Normal",
+    "bias_exponent": 0.7,
+    "description": "Main pack. Solid odds across all rarities.",
+    "ev_label": "~95%",
+    "free_eligible": true,
+    "tiers": {
+      "Common":    { "min": 1.00, "max": 2.00, "odds": 0.176 },
+      "Uncommon":  { "min": 2.00, "max": 5.00, "odds": 0.324 },
+      "Rare":      { "min": 5.00, "max": 6.00, "odds": 0.237 },
+      "Epic":      { "min": 6.00, "max": 7.00, "odds": 0.139 },
+      "Legendary": { "min": 7.00, "max": 9.00, "odds": 0.103 },
+      "Grail":     { "min": 9.00, "max": 100.00, "odds": 0.021 }
+    }
+  },
+  "basic_wild": {
+    "name": "Basic Wild Pack",
+    "cost": 5,
+    "pool": "general",
+    "category": "regular",
+    "volatility": "High",
+    "bias_exponent": 0.9,
+    "description": "High variance. Most lose, some explode.",
+    "ev_label": "~90%",
+    "free_eligible": true,
+    "tiers": {
+      "Common":    { "min": 1.00, "max": 2.00, "odds": 0.141 },
+      "Uncommon":  { "min": 2.00, "max": 5.00, "odds": 0.659 },
+      "Rare":      { "min": 5.00, "max": 6.00, "odds": 0.033 },
+      "Epic":      { "min": 6.00, "max": 7.00, "odds": 0.035 },
+      "Legendary": { "min": 7.00, "max": 9.00, "odds": 0.062 },
+      "Grail":     { "min": 9.00, "max": 100.00, "odds": 0.070 }
+    }
+  },
+  "bronze_normal": {
+    "name": "Bronze Pack",
+    "cost": 25,
+    "pool": "general",
+    "category": "regular",
+    "volatility": "Normal",
+    "bias_exponent": 0.6,
+    "description": "Premium tier. High value pulls with chase potential.",
+    "ev_label": "~90%",
+    "tiers": {
+      "Common":    { "min": 8.00, "max": 10.00, "odds": 0.396 },
+      "Uncommon":  { "min": 10.00, "max": 25.00, "odds": 0.104 },
+      "Rare":      { "min": 25.00, "max": 30.00, "odds": 0.209 },
+      "Epic":      { "min": 30.00, "max": 35.00, "odds": 0.107 },
+      "Legendary": { "min": 35.00, "max": 45.00, "odds": 0.137 },
+      "Grail":     { "min": 45.00, "max": 500.00, "odds": 0.046 }
+    }
+  },
+  "bronze_wild": {
+    "name": "Bronze Wild Pack",
+    "cost": 25,
+    "pool": "general",
+    "category": "regular",
+    "volatility": "High",
+    "bias_exponent": 1.2,
+    "description": "High risk, high reward. 12.7% chance at $45-$500.",
+    "ev_label": "~85%",
+    "tiers": {
+      "Common":    { "min": 8.00, "max": 10.00, "odds": 0.507 },
+      "Uncommon":  { "min": 10.00, "max": 25.00, "odds": 0.293 },
+      "Rare":      { "min": 25.00, "max": 30.00, "odds": 0.018 },
+      "Epic":      { "min": 30.00, "max": 35.00, "odds": 0.016 },
+      "Legendary": { "min": 35.00, "max": 45.00, "odds": 0.039 },
+      "Grail":     { "min": 45.00, "max": 500.00, "odds": 0.127 }
+    }
+  },
+  "silver_normal": {
+    "name": "Silver Pack",
+    "cost": 50,
+    "pool": "general",
+    "category": "regular",
+    "volatility": "Normal",
+    "bias_exponent": 0.5,
+    "description": "Top-tier pack. Serious pulls for serious rippers.",
+    "ev_label": "~90%",
+    "tiers": {
+      "Common":    { "min": 15.00, "max": 20.00, "odds": 0.247 },
+      "Uncommon":  { "min": 20.00, "max": 50.00, "odds": 0.253 },
+      "Rare":      { "min": 50.00, "max": 60.00, "odds": 0.205 },
+      "Epic":      { "min": 60.00, "max": 65.00, "odds": 0.102 },
+      "Legendary": { "min": 65.00, "max": 85.00, "odds": 0.157 },
+      "Grail":     { "min": 85.00, "max": 1000.00, "odds": 0.036 }
+    }
+  },
+  "silver_wild": {
+    "name": "Silver Wild Pack",
+    "cost": 50,
+    "pool": "general",
+    "category": "regular",
+    "volatility": "High",
+    "bias_exponent": 1.4,
+    "description": "Maximum variance. Biggest swings in the house.",
+    "ev_label": "~80%",
+    "tiers": {
+      "Common":    { "min": 15.00, "max": 20.00, "odds": 0.210 },
+      "Uncommon":  { "min": 20.00, "max": 50.00, "odds": 0.590 },
+      "Rare":      { "min": 50.00, "max": 60.00, "odds": 0.017 },
+      "Epic":      { "min": 60.00, "max": 65.00, "odds": 0.015 },
+      "Legendary": { "min": 65.00, "max": 85.00, "odds": 0.053 },
+      "Grail":     { "min": 85.00, "max": 1000.00, "odds": 0.115 }
+    }
+  },
+
+  "sv151": {
+    "name": "151 Classic Pack",
+    "cost": 8,
+    "pool": "sv151",
+    "category": "special",
+    "volatility": "Normal",
+    "bias_exponent": 0.6,
+    "description": "Original 151 Pokémon. Nostalgia-driven chase cards.",
+    "ev_label": "~44%",
+    "tiers": {
+      "Common":    { "min": 0.10, "max": 0.50, "odds": 0.550 },
+      "Uncommon":  { "min": 0.50, "max": 1.00, "odds": 0.250 },
+      "Rare":      { "min": 1.00, "max": 5.00, "odds": 0.100 },
+      "Epic":      { "min": 5.00, "max": 20.00, "odds": 0.050 },
+      "Legendary": { "min": 20.00, "max": 50.00, "odds": 0.030 },
+      "Grail":     { "min": 50.00, "max": 150.00, "odds": 0.015 },
+      "Chase":     { "min": 150.00, "max": 400.00, "odds": 0.005 }
+    }
+  },
+  "me02": {
+    "name": "Phantasmal Flames Pack",
+    "cost": 6,
+    "pool": "me02",
+    "category": "special",
+    "volatility": "Normal",
+    "bias_exponent": 0.6,
+    "description": "Charizard Mega Evolution. Every pack has an ex guarantee.",
+    "ev_label": "~50%",
+    "tiers": {
+      "Common":    { "min": 0.10, "max": 0.50, "odds": 0.450 },
+      "Uncommon":  { "min": 0.50, "max": 2.00, "odds": 0.300 },
+      "Rare":      { "min": 2.00, "max": 5.00, "odds": 0.120 },
+      "Epic":      { "min": 5.00, "max": 15.00, "odds": 0.070 },
+      "Legendary": { "min": 15.00, "max": 50.00, "odds": 0.035 },
+      "Grail":     { "min": 50.00, "max": 300.00, "odds": 0.018 },
+      "Chase":     { "min": 300.00, "max": 800.00, "odds": 0.007 }
+    }
+  },
+  "op14": {
+    "name": "OP-14 Pirate Pack",
+    "cost": 6,
+    "pool": "op14",
+    "category": "special",
+    "volatility": "Normal",
+    "bias_exponent": 0.7,
+    "description": "One Piece OP-14 series. Manga Rare chase potential.",
+    "ev_label": "~45%",
+    "tiers": {
+      "Common":    { "min": 0.05, "max": 0.25, "odds": 0.600 },
+      "Uncommon":  { "min": 0.25, "max": 1.00, "odds": 0.230 },
+      "Rare":      { "min": 1.00, "max": 5.00, "odds": 0.080 },
+      "Epic":      { "min": 5.00, "max": 30.00, "odds": 0.050 },
+      "Legendary": { "min": 30.00, "max": 100.00, "odds": 0.020 },
+      "Grail":     { "min": 100.00, "max": 300.00, "odds": 0.012 },
+      "Chase":     { "min": 300.00, "max": 800.00, "odds": 0.008 }
+    }
+  },
+  "eb03": {
+    "name": "EB-03 Waifu Pack",
+    "cost": 3,
+    "pool": "eb03",
+    "category": "special",
+    "volatility": "Normal",
+    "bias_exponent": 0.6,
+    "description": "One Piece female characters. Low price, high frequency.",
+    "ev_label": "~50%",
+    "free_eligible": true,
+    "tiers": {
+      "Common":    { "min": 0.05, "max": 0.20, "odds": 0.550 },
+      "Uncommon":  { "min": 0.20, "max": 0.50, "odds": 0.270 },
+      "Rare":      { "min": 0.50, "max": 3.00, "odds": 0.080 },
+      "Epic":      { "min": 3.00, "max": 15.00, "odds": 0.050 },
+      "Legendary": { "min": 15.00, "max": 50.00, "odds": 0.025 },
+      "Grail":     { "min": 50.00, "max": 120.00, "odds": 0.015 },
+      "Chase":     { "min": 120.00, "max": 250.00, "odds": 0.010 }
+    }
+  }
+}
