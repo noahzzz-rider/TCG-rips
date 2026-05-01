@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>K2 Collection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div id="root"></div>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script type="text/babel">
+const {useState,useEffect,useRef,useCallback,createContext,useContext} = React;
+
+// ── API helpers ──
+const API = (p,o={})=>{const t=localStorage.getItem('token');const h={'Content-Type':'application/json'};if(t)h['Authorization']='Bearer '+t;return fetch('/api'+p,{...o,headers:h}).then(async r=>{if(r.status===401){localStorage.removeItem('token');window.location.reload()}const d=r.headers.get('content-type')?.includes('json')?await r.json():await r.text();if(!r.ok)throw new Error(d.error||'Failed');return d})};
+const post=(p,b)=>API(p,{method:'POST',body:JSON.stringify(b)});
+const get=p=>API(p);
+
+// ── Toast System ──
+let tid=0;const TC=createContext();
+function TP({children}){const[ts,setTs]=useState([]);const add=useCallback((m,t='info')=>{const i=++tid;setTs(x=>[...x,{id:i,msg:m,type:t}]);setTimeout(()=>setTs(x=>x.filter(y=>y.id!==i)),3000)},[]);
+return React.createElement(TC.Provider,{value:add},children,React.createElement('div',{className:'toast-wrap'},ts.map(t=>React.createElement('div',{key:t.id,className:'toast toast-'+t.type},t.msg))))}
+const useToast=()=>useContext(TC);
+
+// ── Pack Config (11 packs, ordered for display) ──
+const PACK_CONF=[
+  // Regular - $1
+  {key:'starter',name:'Starter Pack',cls:'pack-starter',category:'regular'},
+  // Regular - $5
+  {key:'basic_normal',name:'Basic Pack',cls:'pack-basic',category:'regular',volatility:'Normal'},
+  {key:'basic_wild',name:'Basic Wild',cls:'pack-basic-wild',category:'regular',volatility:'High'},
+  // Regular - $25
+  {key:'bronze_normal',name:'Bronze Pack',cls:'pack-bronze',category:'regular',volatility:'Normal'},
+  {key:'bronze_wild',name:'Bronze Wild',cls:'pack-bronze-wild',category:'regular',volatility:'High'},
+  // Regular - $50
+  {key:'silver_normal',name:'Silver Pack',cls:'pack-silver',category:'regular',volatility:'Normal'},
+  {key:'silver_wild',name:'Silver Wild',cls:'pack-silver-wild',category:'regular',volatility:'High'},
+  // Special series
+  {key:'sv151',name:'151 Classic',cls:'pack-sv151',category:'special'},
+  {key:'me02',name:'Phantasmal Flames',cls:'pack-me02',category:'special'},
+  {key:'op14',name:'OP-14 Pirate',cls:'pack-op14',category:'special'},
+  {key:'eb03',name:'EB-03 Waifu',cls:'pack-eb03',category:'special'},
+];
+
+const glowCls=r=>{if(r==='Epic'||r==='Ex')return 'glow-epic';if(r==='Legendary'||r==='SAR'||r==='Full Art')return 'glow-legendary';if(r==='Grail'||r==='Chase')return 'glow-grail';return ''};
+
+// ── SVG Icons ──
+const IconPacks=()=>React.createElement('svg',{viewBox:'0 0 24 24'},React.createElement('rect',{x:3,y:3,width:18,height:18,rx:3}),React.createElement('line',{x1:3,y1:9,x2:21,y2:9}),React.createElement('line',{x1:3,y1:15,x2:21,y2:15}));
+const IconCollection=()=>React.createElement('svg',{viewBox:'0 0 24 24'},React.createElement('rect',{x:3,y:3,width:7,height:7,rx:1}),React.createElement('rect',{x:14,y:3,width:7,height:7,rx:1}),React.createElement('rect',{x:3,y:14,width:7,height:7,rx:1}),React.createElement('rect',{x:14,y:14,width:7,height:7,rx:1}));
+const IconAccount=()=>React.createElement('svg',{viewBox:'0 0 24 24'},React.createElement('circle',{cx:12,cy:8,r:4}),React.createElement('path',{d:'M4 21c0-4 4-7 8-7s8 3 8 7'}));
+const IconAdmin=()=>React.createElement('svg',{viewBox:'0 0 24 24'},React.createElement('circle',{cx:12,cy:12,r:3}),React.createElement('path',{d:'M12 1v2m0 18v2m-9-11h2m18 0h2m-4.2-6.8l-1.4 1.4M6.6 17.4l-1.4 1.4m0-14.1l1.4 1.4m10.8 10.8l1.4 1.4'}));
+
+// ── LOGIN ──
+function LoginPage({onLogin}){const[mode,setMode]=useState('login');const[u,setU]=useState('');const[p,setP]=useState('');const[err,setErr]=useState('');const[ld,setLd]=useState(false);
+const go=async()=>{if(!u||!p)return;setLd(true);setErr('');
+try{
+  const endpoint = mode === 'register' ? '/register' : '/login';
+  const d=await post(endpoint,{username:u,password:p});localStorage.setItem('token',d.token);onLogin(d.user);
+}catch(e){setErr(e.message)}setLd(false)};
+return(<div className="login-wrap"><div className="login-card">
+  <img src="/logo-lg.png" alt="K2"/><div className="brand">K2 Collection</div><div className="sub">Virtual Card Collection Platform</div>
+  {err&&<div className="login-error">{err}</div>}
+  <div className="field"><input className="input" placeholder="Username" value={u} onChange={e=>setU(e.target.value)} onKeyDown={e=>e.key==='Enter'&&go()}/></div>
+  <div className="field"><input className="input" type="password" placeholder="Password" value={p} onChange={e=>setP(e.target.value)} onKeyDown={e=>e.key==='Enter'&&go()}/></div>
+  <button className="btn-orange" onClick={go} disabled={ld}>{ld?(mode==='register'?'Creating...':'Signing in...'):(mode==='register'?'Create Account':'Sign In')}</button>
+  {mode==='register'&&<div style={{fontSize:11,color:'var(--text2)',marginTop:8,textAlign:'center'}}>🎁 Get $10 free credits to start ripping!</div>}
+  <div style={{marginTop:16,textAlign:'center'}}>
+    <button className="btn-ghost" style={{fontSize:12,padding:'8px 16px'}} onClick={()=>{setMode(mode==='login'?'register':'login');setErr('')}}>
+      {mode==='login'?'New? Create Account':'Already have an account? Sign In'}
+    </button>
+  </div>
+</div></div>)}
+
+// ── TOP BAR ──
+function TopBar({user}){
+return(<header className="topbar"><div className="topbar-inner">
+  <div className="topbar-brand"><img src="/logo.png" alt="K2"/>K2 Collection</div>
+  <div className="balance-pill"><span className="amt">${user.balance.toFixed(2)}</span><span className="plus">+</span></div>
+</div></header>)}
+
+// ── BOTTOM TABS ──
+function BottomTabs({page,onNav,isAdmin}){
+return(<nav className="tabs"><div className="tabs-inner">
+  <button className={'tab'+(page==='packs'?' active':'')} onClick={()=>onNav('packs')}><IconPacks/>Packs</button>
+  <button className={'tab'+(page==='collection'?' active':'')} onClick={()=>onNav('collection')}><IconCollection/>Collection</button>
+  {isAdmin&&<button className={'tab'+(page==='admin'?' active':'')} onClick={()=>onNav('admin')}><IconAdmin/>Admin</button>}
+  <button className={'tab'+(page==='account'?' active':'')} onClick={()=>onNav('account')}><IconAccount/>Account</button>
+</div></nav>)}
+
+// ── PACKS PAGE ──
+function PacksPage({user,packs,onPull,onBatch,onShowInside}){
+const[idx,setIdx]=useState(0);const[cat,setCat]=useState('regular');const touchStart=useRef(0);
+const filtered=PACK_CONF.filter(p=>p.category===cat);
+const pk=filtered[idx]||filtered[0];const packData=packs?.[pk?.key];
+
+const handleTouchStart=e=>{touchStart.current=e.touches[0].clientX};
+const handleTouchEnd=e=>{const d=touchStart.current-e.changedTouches[0].clientX;if(Math.abs(d)>50){if(d>0&&idx<filtered.length-1)setIdx(idx+1);if(d<0&&idx>0)setIdx(idx-1)}};
+
+if(!packData)return <div className="page"><div className="spinner"/></div>;
+const minV=packData.tiers?Math.min(...Object.values(packData.tiers).map(t=>t.minValue||t.min)):0;
+const maxV=packData.tiers?Math.max(...Object.values(packData.tiers).map(t=>t.maxValue||t.max)):0;
+const isWild=pk.volatility==='High';
+const canBuyFree=user.free_credits>0&&!user.has_deposited&&packData.cost<=5;
+const canBuy=user.balance>=packData.cost;
+const canBatch=user.balance>=packData.cost*5;
+
+return(<div className="page">
+  {/* Category Toggle */}
+  <div style={{display:'flex',gap:6,padding:'12px 20px 0',justifyContent:'center'}}>
+    <button className={'cat-btn'+(cat==='regular'?' active':'')} onClick={()=>{setCat('regular');setIdx(0)}}>Regular</button>
+    <button className={'cat-btn'+(cat==='special'?' active':'')} onClick={()=>{setCat('special');setIdx(0)}}>Special Series</button>
+  </div>
+
+  <div className="pack-swiper" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+    <div className="pack-track" style={{transform:`translateX(-${idx*100}%)`}}>
+      {filtered.map((p,i)=>{const pd=packs?.[p.key];return(
+        <div key={p.key} className="pack-slide">
+          <div className={'pack-visual '+p.cls}>
+            <div className="pack-bg"/>
+            <div className="pack-logo-area">
+              <img src="/logo.png" alt="K2"/>
+              <div className="pack-label">K2 Collection</div>
+              <div className="pack-icon"><div style={{width:28,height:28,borderRadius:14,background:'rgba(255,255,255,0.3)'}}/></div>
+              <div style={{color:'rgba(255,255,255,0.8)',fontSize:12,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.1em',marginTop:4}}>{p.name}</div>
+              {p.volatility==='High'&&<div className="wild-badge">⚡ WILD</div>}
+            </div>
+          </div>
+          <div className="pack-name">{p.name}</div>
+        </div>
+      )})}
+    </div>
+  </div>
+  <div className="pack-dots">{filtered.map((p,i)=><div key={i} className={'pack-dot'+(i===idx?' active':'')} onClick={()=>setIdx(i)}/>)}</div>
+  <div style={{padding:'0 20px'}}>
+    <button className="pack-inside-btn" onClick={()=>onShowInside(pk.key)}>👁 What's inside</button>
+    <div className="pack-meta">
+      <div className="pack-meta-item"><div className="meta-label">Min Value</div><div className="meta-value">${minV.toFixed(2)}</div></div>
+      <div className="pack-meta-item"><div className="meta-label">Max Pull</div><div className="meta-value green">${maxV>=999?'∞':maxV.toFixed(0)}</div></div>
+    </div>
+    <div className="pack-actions">
+      <button className="btn-orange" onClick={()=>onPull(pk.key)} disabled={!canBuy}>
+        {canBuyFree?`Open · $${packData.cost} (Free)`:`Open · $${packData.cost}`}
+      </button>
+      <button className="btn-outline" onClick={()=>onBatch(pk.key)} disabled={!canBatch}>5 Packs · ${packData.cost*5}</button>
+    </div>
+    {isWild&&<div style={{textAlign:'center',fontSize:11,color:'var(--gold)',marginTop:8}}>⚡ Higher variance — bigger swings, lower average return</div>}
+  </div>
+</div>)}
+
+// ── WHAT'S INSIDE MODAL ──
+function InsideModal({packKey,packs,onClose}){
+const pd=packs?.[packKey];if(!pd)return null;
+const tiers=Object.entries(pd.tiers);const maxOdds=Math.max(...tiers.map(([,t])=>t.odds));
+return(<div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
+<div className="modal-sheet">
+  <div className="modal-handle"/>
+  <div className="modal-head"><img src="/logo.png" alt="K2"/><div><div className="sub">{pd.name}</div><div className="title">What's Inside</div></div></div>
+  <div className="modal-body">
+    <div className="guarantee"><div className="g-title">96.5% Buyback Guarantee</div><div className="g-text">All collectibles can be sold at 96.5% of Fair Market Value (FMV). Sell proceeds are credited to your balance instantly.</div></div>
+    {pd.volatility&&<div className="volatility-badge" style={{marginBottom:16}}>
+      <span style={{fontWeight:700}}>Volatility: </span>{pd.volatility==='High'?'⚡ High — bigger swings':'Normal — steady returns'}
+    </div>}
+    <div className="odds-bars">
+      {tiers.map(([name,tier])=>{const pct=(tier.odds*100);const barW=Math.max(pct/maxOdds/100*100,8);
+      return(<div className="odds-row" key={name}>
+        <div className="odds-label"><div className="tier-name">{name}</div><div className="tier-range">${tier.min}-${tier.max<900?'$'+tier.max:'∞'}</div></div>
+        <div className="odds-bar-wrap"><div className={'odds-bar bar-'+name.replace(/\s/g,'')} style={{width:barW+'%'}}>{pct.toFixed(1)}%</div></div>
+      </div>)})}
+    </div>
+    <div style={{textAlign:'center',marginBottom:20}}><button className="btn-orange" onClick={onClose} style={{maxWidth:200}}>Close</button></div>
+  </div>
+</div></div>)}
+
+// ── REVEAL ──
+function RevealPage({pull,onAction,onBack}){
+const[flipped,setFlipped]=useState(false);const[done,setDone]=useState(false);const[imgErr,setImgErr]=useState(false);const toast=useToast();const c=pull.card;
+const act=async(a)=>{if(done)return;setDone(true);try{const r=await post('/pull/'+pull.pullId+'/action',{action:a});if(a==='keep')toast('📥 Saved to collection!','keep');else toast('💰 +$'+r.sellCredit.toFixed(2)+' credited','sell');onAction(r)}catch(e){toast(e.message,'error');setDone(false)}};
+return(<div className="page"><div className="reveal-wrap">
+  <div className={'flip-container '+(flipped?glowCls(c.rarity):'')} onClick={()=>!flipped&&setFlipped(true)}>
+    <div className={'flip-card'+(flipped?' flipped':'')}>
+      <div className="flip-face flip-back"><div className="flip-back-inner"><img src="/logo.png" alt="K2"/><div>K2 Collection</div></div></div>
+      <div className="flip-face flip-front">{!imgErr?<img src={c.imgUrl} alt={c.name} onError={()=>setImgErr(true)}/>:<div className="fallback"><div style={{fontSize:18,fontWeight:700}}>{c.name}</div><div style={{fontSize:11,color:'var(--text2)',marginTop:4}}>{c.set}</div></div>}</div>
+    </div>
+  </div>
+  {!flipped&&<div style={{color:'var(--text3)',fontSize:13}}>Tap to reveal</div>}
+  {flipped&&<>
+    <div className="card-info">
+      <div className={'rarity-badge r-'+c.rarity.replace(/\s/g,'')}>{c.rarity}</div>
+      <div className="card-name">{c.name}</div><div className="card-set">{c.set} · {c.number}</div>
+      <div className="card-val">${c.value.toFixed(2)}</div>
+    </div>
+    <div className="action-row">
+      <button className="keep-btn" onClick={()=>act('keep')} disabled={done}>📥 VAULT<span className="sub">Save to collection</span></button>
+      <button className="sell-btn" onClick={()=>act('sell')} disabled={done}>💰 SELL +${pull.sellValue.toFixed(2)}<span className="sub">96.5% buyback</span></button>
+    </div>
+  </>}
+  {done&&<button className="btn-outline" style={{marginTop:20}} onClick={onBack}>← Back to packs</button>}
+</div></div>)}
+
+// ── BATCH REVEAL ──
+function BatchPage({pulls,onDone,onUpdateBal}){
+const[rev,setRev]=useState(new Set());const[sel,setSel]=useState(null);const[acts,setActs]=useState({});const toast=useToast();
+const reveal=i=>{setRev(p=>new Set([...p,i]));setSel(i)};
+const revealAll=()=>{setRev(new Set(pulls.map((_,i)=>i)));const fp=pulls.findIndex((_,i)=>!acts[i]);if(fp>=0)setSel(fp)};
+const act=async(i,a)=>{const p=pulls[i];try{const r=await post('/pull/'+p.pullId+'/action',{action:a});setActs(x=>({...x,[i]:a}));if(a==='keep')toast('📥 Saved!','keep');else toast('💰 +$'+r.sellCredit.toFixed(2),'sell');onUpdateBal(r.balance);
+const nx=pulls.findIndex((_,j)=>j>i&&!acts[j]&&rev.has(j));if(nx>=0)setSel(nx);else{const any=pulls.findIndex((_,j)=>!acts[j]&&j!==i);if(any<0)setTimeout(()=>onDone(),800)}}catch(e){toast(e.message,'error')}};
+const allRev=rev.size===pulls.length;const allDone=Object.keys(acts).length===pulls.length;
+const pending=pulls.filter((_,i)=>rev.has(i)&&!acts[i]).length;const s=sel!==null?pulls[sel]:null;
+return(<div className="page"><div className="page-scroll">
+  <div className="section-title">5× Pack Opening</div>
+  <div className="batch-grid">{pulls.map((p,i)=>{const isR=rev.has(i);const isA=!!acts[i];
+  return(<div key={i} className={'batch-card'+(isR?'':' unrevealed')+(isA?' actioned':'')+' '+glowCls(isR?p.card.rarity:'')}
+    onClick={()=>isR?setSel(i):reveal(i)} style={sel===i?{outline:'2px solid var(--orange)',outlineOffset:2}:{}}>
+    {isR&&<img src={p.card.imgUrl} alt={p.card.name} onError={e=>{e.target.style.display='none'}}/>}
+  </div>)})}</div>
+  {!allRev&&<button className="btn-orange" onClick={revealAll} style={{marginBottom:16}}>Reveal All</button>}
+  {s&&!acts[sel]&&rev.has(sel)&&<div className="batch-sel">
+    <img src={s.card.imgUrl} alt={s.card.name} onError={e=>{e.target.style.display='none'}}/>
+    <div className="batch-sel-info"><div className={'rarity-badge r-'+s.card.rarity.replace(/\s/g,'')} style={{marginBottom:4,fontSize:10}}>{s.card.rarity}</div>
+    <div className="name">{s.card.name}</div><div style={{color:'var(--green)',fontWeight:700,marginTop:4,fontFamily:'JetBrains Mono'}}>${s.card.value.toFixed(2)}</div>
+    <div className="batch-sel-btns">
+      <button className="btn-sm btn-green" onClick={()=>act(sel,'keep')}>📥 Vault</button>
+      <button className="btn-sm btn-ghost" onClick={()=>act(sel,'sell')}>💰 Sell +${s.sellValue.toFixed(2)}</button>
+    </div>
+    </div></div>}
+  {allRev&&pending>1&&<div style={{display:'flex',gap:8,marginTop:12}}>
+    <button className="btn-sm btn-green" style={{flex:1}} onClick={async()=>{for(let i=0;i<pulls.length;i++)if(!acts[i]&&rev.has(i))await act(i,'keep')}}>📥 Vault All ({pending})</button>
+    <button className="btn-sm btn-ghost" style={{flex:1}} onClick={async()=>{for(let i=0;i<pulls.length;i++)if(!acts[i]&&rev.has(i))await act(i,'sell')}}>💰 Sell All</button>
+  </div>}
+  {allDone&&<button className="btn-orange" style={{marginTop:16}} onClick={onDone}>← Back to packs</button>}
+</div></div>)}
+
+// ── COLLECTION ──
+function CollectionPage(){const[items,setItems]=useState([]);const[ld,setLd]=useState(true);
+useEffect(()=>{get('/vault').then(setItems).finally(()=>setLd(false))},[]);
+if(ld)return<div className="page"><div className="spinner"/></div>;
+return(<div className="page"><div className="page-scroll">
+  <div className="collection-header"><div className="section-title" style={{margin:0}}>My Collection</div>
+  <div className="collection-filters"><span style={{fontSize:12,color:'var(--text2)'}}>{items.length} cards</span></div></div>
+  {items.length===0?<div className="collection-empty"><div className="icon">🃏</div><div>No cards yet. Open some packs!</div></div>
+  :<div className="collection-grid">{items.map(it=><div key={it.id} className="vault-card">
+    <img src={it.card_img} alt={it.card_name} onError={e=>{e.target.style.display='none'}}/>
+    <div className="vault-card-info"><div className="price">${it.card_value.toFixed(2)}</div><div className="name">{it.card_name}</div>
+    <div className={'vault-status st-'+(it.ship_status||'pending')}>{it.ship_status||'pending'}</div></div>
+  </div>)}</div>}
+  <div className="collection-notice">Vaulted cards will be <strong>automatically sold after 7 days</strong> at fair market value unless shipped.</div>
+</div></div>)}
+
+// ── ACCOUNT ──
+function AccountPage({user,onLogout}){
+const gap=Math.max(0,20-user.balance);const pct=Math.min(100,(user.balance/20)*100);
+return(<div className="page"><div className="page-scroll">
+  <div className="section-title">Account</div>
+  <div style={{background:'var(--bg3)',borderRadius:14,padding:20,marginBottom:16}}>
+    <div style={{display:'flex',alignItems:'center',gap:14}}>
+      <div style={{width:48,height:48,borderRadius:24,background:'var(--bg4)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,fontWeight:700}}>{user.username[0].toUpperCase()}</div>
+      <div><div style={{fontWeight:700,fontSize:16}}>{user.username}</div><div style={{fontSize:12,color:'var(--text2)'}}>{user.role==='admin'?'Administrator':'Member'}</div></div>
+    </div>
+    <div style={{display:'flex',justifyContent:'space-between',marginTop:16,padding:'12px 0',borderTop:'1px solid var(--border)'}}>
+      <div><div style={{fontSize:11,color:'var(--text3)'}}>Balance</div><div style={{fontSize:20,fontWeight:800,color:'var(--green)',fontFamily:'JetBrains Mono'}}>${user.balance.toFixed(2)}</div></div>
+      <div style={{textAlign:'right'}}><div style={{fontSize:11,color:'var(--text3)'}}>Collection</div><div style={{fontSize:20,fontWeight:800}}>{user.vaultCount||0}</div></div>
+    </div>
+  </div>
+
+  {/* Withdrawal Progress */}
+  <div style={{background:'var(--bg3)',borderRadius:14,padding:20,marginBottom:16}}>
+    <div style={{fontSize:14,fontWeight:700,marginBottom:12}}>Withdrawal Status</div>
+    <div style={{height:8,background:'var(--bg)',borderRadius:4,overflow:'hidden',marginBottom:8}}>
+      <div style={{height:'100%',width:pct+'%',background:pct>=100?'var(--green)':'linear-gradient(90deg,var(--orange),var(--gold))',borderRadius:4,transition:'width 0.5s'}}/>
+    </div>
+    {!user.has_deposited?
+      <div style={{fontSize:12,color:'var(--text2)'}}>💳 Make your first deposit to unlock withdrawals</div>
+      :gap>0?
+      <div style={{fontSize:12,color:'var(--gold)'}}>💰 ${gap.toFixed(2)} more needed to reach $20 minimum</div>
+      :<div style={{fontSize:12,color:'var(--green)'}}>✅ Eligible to withdraw!</div>
+    }
+    {user.free_credits>0&&<div style={{fontSize:11,color:'var(--text3)',marginTop:8}}>Free credits remaining: ${user.free_credits.toFixed(2)}</div>}
+  </div>
+
+  <button className="btn-outline" style={{width:'100%'}} onClick={onLogout}>Sign Out</button>
+</div></div>)}
+
+// ── ADMIN ──
+function AdminPage(){const[tab,setTab]=useState('users');const toast=useToast();
+const tabs=[{k:'users',l:'Users'},{k:'topup',l:'Add $'},{k:'deduct',l:'Deduct $'},{k:'pulls',l:'Pulls'},{k:'vault',l:'Vault'},{k:'export',l:'Export'}];
+return(<div className="page"><div className="page-scroll">
+<div className="section-title">Admin</div>
+<div className="admin-tabs">{tabs.map(t=><button key={t.k} className={'admin-tab'+(tab===t.k?' active':'')} onClick={()=>setTab(t.k)}>{t.l}</button>)}</div>
+{tab==='users'&&<AdminUsers toast={toast}/>}{tab==='topup'&&<AdminBal type="topup" toast={toast}/>}{tab==='deduct'&&<AdminBal type="deduct" toast={toast}/>}
+{tab==='pulls'&&<AdminPulls/>}{tab==='vault'&&<AdminVault toast={toast}/>}{tab==='export'&&<AdminExport/>}
+</div></div>)}
+
+function AdminUsers({toast}){const[users,setUsers]=useState([]);const[nu,setNu]=useState('');const[np,setNp]=useState('');const[ld,setLd]=useState(false);
+const load=()=>get('/admin/users').then(setUsers);useEffect(()=>{load()},[]);
+const create=async()=>{if(!nu||!np)return;setLd(true);try{await post('/admin/create-user',{username:nu,password:np});toast('User created','info');setNu('');setNp('');load()}catch(e){toast(e.message,'error')}setLd(false)};
+return(<div><div style={{background:'var(--bg3)',borderRadius:12,padding:16,marginBottom:16}}>
+<div className="label">Create User</div><div style={{display:'flex',gap:8,marginBottom:8}}>
+<input className="input" placeholder="Username" value={nu} onChange={e=>setNu(e.target.value)} style={{flex:1}}/>
+<input className="input" type="password" placeholder="Password" value={np} onChange={e=>setNp(e.target.value)} style={{flex:1}}/></div>
+<button className="btn-orange" onClick={create} disabled={ld} style={{fontSize:13,padding:12}}>Create User</button></div>
+<div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>User</th><th>Bal</th><th>Free</th><th>Pulls</th><th>Active</th></tr></thead><tbody>
+{users.map(u=><tr key={u.id}><td>{u.username}{u.has_deposited?'✅':''}</td><td style={{color:'var(--green)'}}>${u.balance.toFixed(2)}</td><td>${(u.free_credits||0).toFixed(2)}</td><td>{u.total_pulls}</td><td style={{fontSize:9}}>{u.last_active_at?new Date(u.last_active_at).toLocaleDateString():'—'}</td></tr>)}
+</tbody></table></div></div>)}
+
+function AdminBal({type,toast}){const[users,setUsers]=useState([]);const[uid,setUid]=useState('');const[amt,setAmt]=useState('');const[reason,setReason]=useState('');const[ld,setLd]=useState(false);
+useEffect(()=>{get('/admin/users').then(setUsers)},[]);
+const go=async()=>{if(!uid||!amt)return;setLd(true);try{const r=await post('/admin/balance',{userId:parseInt(uid),type,amount:parseFloat(amt),reason:reason||type});toast('Balance: $'+r.balance.toFixed(2),'info');setAmt('');setReason('')}catch(e){toast(e.message,'error')}setLd(false)};
+return(<div><div className="field"><div className="label">User</div><select className="input" value={uid} onChange={e=>setUid(e.target.value)}><option value="">Choose...</option>{users.filter(u=>u.role!=='admin').map(u=><option key={u.id} value={u.id}>{u.username} (${u.balance.toFixed(2)})</option>)}</select></div>
+<div className="field"><div className="label">Amount</div><input className="input" type="number" step="0.01" value={amt} onChange={e=>setAmt(e.target.value)}/></div>
+<div className="field"><div className="label">Reason</div><input className="input" value={reason} onChange={e=>setReason(e.target.value)}/></div>
+<button className="btn-orange" onClick={go} disabled={ld} style={{fontSize:13,padding:12}}>{type==='topup'?'💰 Add':'💸 Deduct'}</button></div>)}
+
+function AdminPulls(){const[pulls,setPulls]=useState([]);useEffect(()=>{get('/admin/pulls').then(setPulls)},[]);
+return(<div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>User</th><th>Pack</th><th>Card</th><th>Val</th><th>Act</th></tr></thead><tbody>
+{pulls.slice(0,100).map(p=><tr key={p.id}><td>{p.username}</td><td>{p.pack_type}</td><td style={{maxWidth:120,overflow:'hidden',textOverflow:'ellipsis'}}>{p.card_name}</td><td>${p.card_value.toFixed(2)}</td><td>{p.action||'—'}</td></tr>)}
+</tbody></table></div>)}
+
+function AdminVault({toast}){const[items,setItems]=useState([]);const load=()=>get('/admin/vault').then(setItems);useEffect(()=>{load()},[]);
+const cycle=async(it)=>{const next={pending:'shipped',shipped:'delivered',delivered:'pending'};const ns=next[it.ship_status||'pending'];
+try{await post('/admin/shipment/'+it.shipment_id+'/status',{status:ns});toast('→ '+ns,'info');load()}catch(e){toast(e.message,'error')}};
+return(<div>{items.map(it=><div key={it.id} style={{display:'flex',gap:12,alignItems:'center',padding:10,background:'var(--bg3)',borderRadius:10,marginBottom:8,cursor:'pointer'}} onClick={()=>cycle(it)}>
+<img src={it.card_img} alt="" style={{width:40,height:56,objectFit:'contain',borderRadius:4}} onError={e=>{e.target.style.display='none'}}/>
+<div style={{flex:1}}><div style={{fontWeight:600,fontSize:12}}>{it.card_name}</div><div style={{fontSize:10,color:'var(--text2)'}}>{it.username}</div></div>
+<div className={'vault-status st-'+(it.ship_status||'pending')}>{it.ship_status||'pending'}</div>
+</div>)}{!items.length&&<div className="empty">No vault items</div>}
+<div style={{fontSize:10,color:'var(--text3)',textAlign:'center',marginTop:8}}>Tap to cycle status</div></div>)}
+
+function AdminExport(){const tables=['users','balance_logs','pulls','shipments','login_logs','page_views'];
+return(<div>{tables.map(t=><a key={t} href={'/api/admin/export/'+t} target="_blank"><button className="btn-outline" style={{width:'100%',marginBottom:8,fontSize:12}}>📥 {t}.csv</button></a>)}</div>)}
+
+// ── APP ROOT ──
+function App(){
+const[user,setUser]=useState(null);const[page,setPage]=useState('packs');const[pullData,setPullData]=useState(null);
+const[batchData,setBatchData]=useState(null);const[packs,setPacks]=useState(null);const[insideKey,setInsideKey]=useState(null);
+const toast=useToast();
+
+useEffect(()=>{const t=localStorage.getItem('token');if(t){get('/me').then(u=>{setUser(u)}).catch(()=>localStorage.removeItem('token'))}}, []);
+useEffect(()=>{if(user)get('/odds').then(d=>setPacks(d.packs))},[user]);
+
+const refresh=async()=>{try{const u=await get('/me');setUser(u)}catch{}};
+const nav=p=>{setPage(p);setPullData(null);setBatchData(null)};
+
+const handlePull=async(pk)=>{try{const d=await post('/pull',{packType:pk});setPullData(d);setUser(u=>({...u,balance:d.balance,free_credits:d.free_credits}));setPage('reveal')}catch(e){toast(e.message,'error')}};
+const handleBatch=async(pk)=>{try{const d=await post('/pull/batch',{packType:pk});setBatchData(d.pulls);setUser(u=>({...u,balance:d.balance,free_credits:d.free_credits}));setPage('batch')}catch(e){toast(e.message,'error')}};
+
+if(!user)return<LoginPage onLogin={u=>{setUser(u);refresh()}}/>;
+return(<>
+  <TopBar user={user}/>
+  {page==='packs'&&packs&&<PacksPage user={user} packs={packs} onPull={handlePull} onBatch={handleBatch} onShowInside={k=>setInsideKey(k)}/>}
+  {page==='reveal'&&pullData&&<RevealPage pull={pullData} onAction={r=>{setUser(u=>({...u,balance:r.balance}));refresh()}} onBack={()=>nav('packs')}/>}
+  {page==='batch'&&batchData&&<BatchPage pulls={batchData} onDone={()=>{refresh();nav('packs')}} onUpdateBal={b=>setUser(u=>({...u,balance:b}))}/>}
+  {page==='collection'&&<CollectionPage/>}
+  {page==='account'&&<AccountPage user={user} onLogout={()=>{localStorage.removeItem('token');setUser(null);setPage('packs')}}/>}
+  {page==='admin'&&user.role==='admin'&&<AdminPage/>}
+  {insideKey&&packs&&<InsideModal packKey={insideKey} packs={packs} onClose={()=>setInsideKey(null)}/>}
+  <BottomTabs page={page} onNav={nav} isAdmin={user.role==='admin'}/>
+</>)}
+
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(TP,null,React.createElement(App)));
+</script>
+</body>
+</html>
