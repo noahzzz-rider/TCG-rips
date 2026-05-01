@@ -4,12 +4,12 @@ const bcrypt = require('bcryptjs');
 const JWT_SECRET = process.env.JWT_SECRET || 'tcg-rips-secret-key-change-me';
 
 function auth(db) {
-  return async (req, res, next) => {
+  return (req, res, next) => {
     const h = req.headers.authorization;
     if (!h) return res.status(401).json({ error: 'No token' });
     try {
       req.user = jwt.verify(h.replace('Bearer ', ''), JWT_SECRET);
-      await db.query('UPDATE users SET last_active_at=NOW() WHERE id=$1', [req.user.id]);
+      db.prepare("UPDATE users SET last_active_at=datetime('now') WHERE id=?").run(req.user.id);
       next();
     } catch {
       return res.status(401).json({ error: 'Invalid token' });

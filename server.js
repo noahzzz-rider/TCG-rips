@@ -15,26 +15,22 @@ app.use(cors());
 app.use(express.json({ limit: '5mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-async function start() {
-  const db = await initDB();
-  const cardData = loadAllData();
+// Initialize database and card data
+const db = initDB();
+const cardData = loadAllData();
 
-  authRoutes(app, db);
-  userRoutes(app, db, cardData);
-  adminRoutes(app, db, cardData);
-  exportRoute(app, db);
+// Mount routes
+authRoutes(app, db);
+userRoutes(app, db, cardData);
+adminRoutes(app, db, cardData);
+exportRoute(app, db);
 
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-  });
+// SPA fallback
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
-  app.listen(PORT, () => {
-    console.log(`K2 Collection running on port ${PORT}`);
-    cardData.logStatus();
-  });
-}
-
-start().catch(err => {
-  console.error('Failed to start:', err);
-  process.exit(1);
+app.listen(PORT, () => {
+  console.log(`K2 Collection running on port ${PORT}`);
+  cardData.logStatus();
 });
