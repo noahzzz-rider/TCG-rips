@@ -49,6 +49,24 @@ const PACK_CONF=[
 
 const glowCls=r=>{if(r==='Epic'||r==='Ex')return 'glow-epic';if(r==='Legendary'||r==='SAR'||r==='Full Art')return 'glow-legendary';if(r==='Grail'||r==='Chase')return 'glow-grail';return ''};
 
+// Rarity → CSS class for card borders in Collection/Batch/Reveal
+const rarityCls=r=>{
+  if(!r)return 'rc-common';
+  if(r==='Grail'||r==='Chase')return 'rc-grail';
+  if(r==='Legendary'||r==='SAR'||r==='Full Art')return 'rc-legendary';
+  if(r==='Epic'||r==='Ex')return 'rc-epic';
+  if(r==='Uncommon'||r==='Rare')return 'rc-rare';
+  return 'rc-common';
+};
+const rarityTag=r=>{
+  if(!r)return 'rt-common';
+  if(r==='Grail'||r==='Chase')return 'rt-grail';
+  if(r==='Legendary'||r==='SAR'||r==='Full Art')return 'rt-legendary';
+  if(r==='Epic'||r==='Ex')return 'rt-epic';
+  if(r==='Uncommon'||r==='Rare')return 'rt-rare';
+  return 'rt-common';
+};
+
 // ── SVG Icons ──
 const IconPacks=()=>React.createElement('svg',{viewBox:'0 0 24 24'},React.createElement('rect',{x:3,y:3,width:18,height:18,rx:3}),React.createElement('line',{x1:3,y1:9,x2:21,y2:9}),React.createElement('line',{x1:3,y1:15,x2:21,y2:15}));
 const IconShowroom=()=>React.createElement('svg',{viewBox:'0 0 24 24'},React.createElement('path',{d:'M4 7h16M4 7l2-4h12l2 4M4 7v10a2 2 0 002 2h12a2 2 0 002-2V7'}),React.createElement('line',{x1:12,y1:11,x2:12,y2:15}),React.createElement('line',{x1:10,y1:13,x2:14,y2:13}));
@@ -193,7 +211,7 @@ return(<div className="page"><div className="reveal-wrap">
   <div className={'flip-container '+(flipped?glowCls(c.rarity):'')} onClick={()=>!flipped&&setFlipped(true)}>
     <div className={'flip-card'+(flipped?' flipped':'')}>
       <div className="flip-face flip-back"><div className="flip-back-inner"><img src="/logo.png" alt="K2"/><div>K2 Collection</div></div></div>
-      <div className="flip-face flip-front">{!imgErr?<img src={c.imgUrl} alt={c.name} onError={()=>setImgErr(true)}/>:<div className="fallback"><div style={{fontSize:18,fontWeight:700}}>{c.name}</div><div style={{fontSize:11,color:'var(--text2)',marginTop:4}}>{c.set}</div></div>}</div>
+      <div className={'flip-face flip-front '+(flipped?rarityCls(c.rarity):'')}>{!imgErr?<img src={c.imgUrl} alt={c.name} onError={()=>setImgErr(true)}/>:<div className="fallback"><div style={{fontSize:18,fontWeight:700}}>{c.name}</div><div style={{fontSize:11,color:'var(--text2)',marginTop:4}}>{c.set}</div></div>}</div>
     </div>
   </div>
   {!flipped&&<div style={{color:'var(--text3)',fontSize:13}}>Tap to reveal</div>}
@@ -223,7 +241,7 @@ const pending=pulls.filter((_,i)=>rev.has(i)&&!acts[i]).length;const s=sel!==nul
 return(<div className="page"><div className="page-scroll">
   <div className="section-title">5× Pack Opening</div>
   <div className="batch-grid">{pulls.map((p,i)=>{const isR=rev.has(i);const isA=!!acts[i];
-  return(<div key={i} className={'batch-card'+(isR?'':' unrevealed')+(isA?' actioned':'')+' '+glowCls(isR?p.card.rarity:'')}
+  return(<div key={i} className={'batch-card'+(isR?' '+rarityCls(p.card.rarity):' unrevealed')+(isA?' actioned':'')}
     onClick={()=>isR?setSel(i):reveal(i)} style={sel===i?{outline:'2px solid var(--orange)',outlineOffset:2}:{}}>
     {isR&&<img src={p.card.imgUrl} alt={p.card.name} onError={e=>{e.target.style.display='none'}}/>}
   </div>)})}</div>
@@ -254,9 +272,12 @@ return(<div className="page"><div className="page-scroll">
   {items.length===0?<div className="collection-empty"><div className="icon">🃏</div><div>No cards yet. Open some packs!</div></div>
   :<div className="collection-grid">{items.map(it=>{
     const isPSA=it.card_name&&it.card_name.includes('PSA');
-    return(<div key={it.id} className={'vault-card'+(isPSA?' psa':'')}>
+    const rc=rarityCls(it.card_rarity);
+    const rt=rarityTag(it.card_rarity);
+    return(<div key={it.id} className={'vault-card '+rc+(isPSA?' psa':'')}>
     <div className="card-img-wrap" data-grade={isPSA?it.card_name.match(/PSA \d+/)?.[0]||'PSA':''}>
       <img src={it.card_img} alt={it.card_name} onError={e=>{e.target.style.display='none'}}/>
+      <span className={'rarity-tag '+rt}>{it.card_rarity||'Common'}</span>
     </div>
     <div className="vault-card-info"><div className="price">${it.card_value.toFixed(2)}</div><div className="name">{it.card_name}</div>
     <div className={'vault-status st-'+(it.ship_status||'pending')}>{it.ship_status||'pending'}</div></div>
