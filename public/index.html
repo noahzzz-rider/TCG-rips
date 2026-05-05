@@ -13,6 +13,7 @@
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 <script type="text/babel">
 const {useState,useEffect,useRef,useCallback,createContext,useContext} = React;
 
@@ -66,6 +67,40 @@ const rarityTag=r=>{
   if(r==='Uncommon'||r==='Rare')return 'rt-rare';
   return 'rt-common';
 };
+
+// ── Confetti Effects ──
+const fireConfetti=(rarity)=>{
+  if(typeof confetti==='undefined')return;
+  if(rarity==='Grail'||rarity==='Chase'){
+    confetti({particleCount:180,spread:120,origin:{y:0.55},colors:['#ff1744','#ff4081','#ff6e40','#ffd740','#fff']});
+    setTimeout(()=>confetti({particleCount:80,spread:60,origin:{y:0.4,x:0.3},colors:['#ff1744','#ffd740']}),300);
+    setTimeout(()=>confetti({particleCount:80,spread:60,origin:{y:0.4,x:0.7},colors:['#ff1744','#ffd740']}),500);
+  }else if(rarity==='Legendary'||rarity==='SAR'||rarity==='Full Art'){
+    confetti({particleCount:120,spread:90,origin:{y:0.55},colors:['#ffab00','#ff6d00','#ffd740','#fff']});
+  }else if(rarity==='Epic'||rarity==='Ex'){
+    confetti({particleCount:80,spread:70,origin:{y:0.55},colors:['#aa00ff','#e040fb','#7c4dff','#fff']});
+  }
+};
+
+// ── Star Particles Background ──
+function StarField(){
+  const stars=useRef([]);
+  if(!stars.current.length){
+    for(let i=0;i<25;i++){
+      stars.current.push({
+        id:i,left:Math.random()*100,top:Math.random()*100,
+        size:Math.random()*2+0.5,delay:Math.random()*4,dur:Math.random()*2+1.5
+      });
+    }
+  }
+  return React.createElement('div',{className:'star-field'},
+    stars.current.map(s=>React.createElement('div',{
+      key:s.id,className:'star',
+      style:{left:s.left+'%',top:s.top+'%',width:s.size,height:s.size,
+        animationDelay:s.delay+'s',animationDuration:s.dur+'s'}
+    }))
+  );
+}
 
 // ── SVG Icons ──
 const IconPacks=()=>React.createElement('svg',{viewBox:'0 0 24 24'},React.createElement('rect',{x:3,y:3,width:18,height:18,rx:3}),React.createElement('line',{x1:3,y1:9,x2:21,y2:9}),React.createElement('line',{x1:3,y1:15,x2:21,y2:15}));
@@ -205,48 +240,113 @@ return(<div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&on
 
 // ── REVEAL ──
 function RevealPage({pull,onAction,onBack}){
-const[flipped,setFlipped]=useState(false);const[done,setDone]=useState(false);const[imgErr,setImgErr]=useState(false);const toast=useToast();const c=pull.card;
-const act=async(a)=>{if(done)return;setDone(true);try{const r=await post('/pull/'+pull.pullId+'/action',{action:a});if(a==='keep')toast('📥 Saved to collection!','keep');else toast('💰 +$'+r.sellCredit.toFixed(2)+' credited','sell');onAction(r)}catch(e){toast(e.message,'error');setDone(false)}};
-const revealBg=flipped?'revealed-'+rarityCls(c.rarity).replace('rc-',''):'';
+const[phase,setPhase]=useState('waiting');// waiting → flipping → revealed → done
+const[imgErr,setImgErr]=useState(false);const toast=useToast();const c=pull.card;
+const flipRef=useRef(null);
+
+const doFlip=()=>{
+  if(phase!=='waiting')return;
+  setPhase('flipping');
+  // Card flip animation via CSS class
+  setTimeout(()=>{
+    setPhase('revealed');
+    fireConfetti(c.rarity);
+  },900);
+};
+
+const act=async(a)=>{if(phase==='done')return;setPhase('done');try{const r=await post('/pull/'+pull.pullId+'/action',{action:a});if(a==='keep')toast('📥 Saved to collection!','keep');else toast('💰 +$'+r.sellCredit.toFixed(2)+' credited','sell');onAction(r)}catch(e){toast(e.message,'error');setPhase('revealed')}};
+
+const revealBg=(phase==='revealed'||phase==='done')?'revealed-'+rarityCls(c.rarity).replace('rc-',''):'';
+const isFlipped=phase==='flipping'||phase==='revealed'||phase==='done';
+
 return(<div className="page"><div className={'reveal-wrap '+revealBg}>
-  <div className={'flip-container '+(flipped?glowCls(c.rarity):'')} onClick={()=>!flipped&&setFlipped(true)}>
-    <div className={'flip-card'+(flipped?' flipped':'')}>
-      <div className="flip-face flip-back"><div className="flip-back-inner"><img src="/logo.png" alt="K2"/><div>K2 Collection</div></div></div>
-      <div className={'flip-face flip-front '+(flipped?rarityCls(c.rarity):'')}>{!imgErr?<img src={c.imgUrl} alt={c.name} onError={()=>setImgErr(true)}/>:<div className="fallback"><div style={{fontSize:18,fontWeight:700}}>{c.name}</div><div style={{fontSize:11,color:'var(--text2)',marginTop:4}}>{c.set}</div></div>}</div>
+  <StarField/>
+  <div className={'flip-container '+(isFlipped?glowCls(c.rarity):'')} onClick={doFlip} style={{cursor:phase==='waiting'?'pointer':'default'}}>
+    <div className={'flip-card'+(isFlipped?' flipped':'')}>
+      <div className="flip-face flip-back"><div className="flip-back-inner"><img src="/logo.png" alt="K2"/><div>K2 Collection</div><div style={{marginTop:8,fontSize:9,color:'rgba(255,255,255,0.3)'}}>TAP TO REVEAL</div></div></div>
+      <div className={'flip-face flip-front '+(isFlipped?rarityCls(c.rarity):'')}>{!imgErr?<img src={c.imgUrl} alt={c.name} onError={()=>setImgErr(true)}/>:<div className="fallback"><div style={{fontSize:18,fontWeight:700}}>{c.name}</div><div style={{fontSize:11,color:'var(--text2)',marginTop:4}}>{c.set}</div></div>}</div>
     </div>
   </div>
-  {!flipped&&<div style={{color:'var(--text3)',fontSize:13}}>Tap to reveal</div>}
-  {flipped&&<>
-    <div className="card-info">
+  {phase==='waiting'&&<div className="reveal-hint">Tap to reveal</div>}
+  {(phase==='revealed'||phase==='done')&&<>
+    <div className="card-info card-info-anim">
       <div className={'rarity-badge r-'+c.rarity.replace(/\s/g,'')}>{c.rarity}</div>
       <div className="card-name">{c.name}</div><div className="card-set">{c.set} · {c.number}</div>
       <div className="card-val">${c.value.toFixed(2)}</div>
     </div>
     <div className="action-row">
-      <button className="keep-btn" onClick={()=>act('keep')} disabled={done}>📥 VAULT<span className="sub">Save to collection</span></button>
-      <button className="sell-btn" onClick={()=>act('sell')} disabled={done}>💰 SELL +${pull.sellValue.toFixed(2)}<span className="sub">96.5% buyback</span></button>
+      <button className="keep-btn" onClick={()=>act('keep')} disabled={phase==='done'}>📥 VAULT<span className="sub">Save to collection</span></button>
+      <button className="sell-btn" onClick={()=>act('sell')} disabled={phase==='done'}>💰 SELL +${pull.sellValue.toFixed(2)}<span className="sub">96.5% buyback</span></button>
     </div>
   </>}
-  {done&&<button className="btn-outline" style={{marginTop:20}} onClick={onBack}>← Back to packs</button>}
+  {phase==='done'&&<button className="btn-outline" style={{marginTop:20}} onClick={onBack}>← Back to packs</button>}
 </div></div>)}
 
 // ── BATCH REVEAL ──
 function BatchPage({pulls,onDone,onUpdateBal}){
 const[rev,setRev]=useState(new Set());const[sel,setSel]=useState(null);const[acts,setActs]=useState({});const toast=useToast();
-const reveal=i=>{setRev(p=>new Set([...p,i]));setSel(i)};
-const revealAll=()=>{setRev(new Set(pulls.map((_,i)=>i)));const fp=pulls.findIndex((_,i)=>!acts[i]);if(fp>=0)setSel(fp)};
+const[mode,setMode]=useState(null);// null → choosing, 'all' → reveal all, 'single' → one by one
+const[autoRevIdx,setAutoRevIdx]=useState(0);
+
+// Single mode: reveal next card on click
+const revealNext=()=>{
+  const nextUnrev=pulls.findIndex((_,i)=>!rev.has(i));
+  if(nextUnrev>=0){
+    setRev(p=>new Set([...p,nextUnrev]));
+    setSel(nextUnrev);
+    // Fire confetti for high rarity
+    setTimeout(()=>fireConfetti(pulls[nextUnrev].card.rarity),400);
+  }
+};
+
+// Reveal all with staggered timing
+const revealAllSeq=()=>{
+  setMode('all');
+  pulls.forEach((_,i)=>{
+    setTimeout(()=>{
+      setRev(p=>new Set([...p,i]));
+      if(i===0)setSel(0);
+      fireConfetti(pulls[i].card.rarity);
+    },i*350);
+  });
+  // After all revealed, find best card for confetti
+  setTimeout(()=>{
+    const best=pulls.reduce((a,b)=>b.card.value>a.card.value?b:a,pulls[0]);
+    setSel(pulls.indexOf(best));
+  },pulls.length*350+200);
+};
+
+const startSingle=()=>{setMode('single');revealNext()};
+
 const act=async(i,a)=>{const p=pulls[i];try{const r=await post('/pull/'+p.pullId+'/action',{action:a});setActs(x=>({...x,[i]:a}));if(a==='keep')toast('📥 Saved!','keep');else toast('💰 +$'+r.sellCredit.toFixed(2),'sell');onUpdateBal(r.balance);
 const nx=pulls.findIndex((_,j)=>j>i&&!acts[j]&&rev.has(j));if(nx>=0)setSel(nx);else{const any=pulls.findIndex((_,j)=>!acts[j]&&j!==i);if(any<0)setTimeout(()=>onDone(),800)}}catch(e){toast(e.message,'error')}};
 const allRev=rev.size===pulls.length;const allDone=Object.keys(acts).length===pulls.length;
 const pending=pulls.filter((_,i)=>rev.has(i)&&!acts[i]).length;const s=sel!==null?pulls[sel]:null;
+
 return(<div className="page"><div className="page-scroll">
+  <StarField/>
   <div className="section-title">5× Pack Opening</div>
+
+  {/* Mode selection - before any cards revealed */}
+  {!mode&&<div style={{display:'flex',flexDirection:'column',gap:12,marginBottom:20,alignItems:'center'}}>
+    <div style={{color:'var(--text2)',fontSize:13,marginBottom:4}}>How do you want to open?</div>
+    <button className="btn-orange" onClick={revealAllSeq} style={{maxWidth:300}}>⚡ Reveal All at Once</button>
+    <button className="btn-outline" onClick={startSingle} style={{maxWidth:300,width:'100%'}}>🃏 Open One by One</button>
+  </div>}
+
   <div className="batch-grid">{pulls.map((p,i)=>{const isR=rev.has(i);const isA=!!acts[i];
   return(<div key={i} className={'batch-card'+(isR?' '+rarityCls(p.card.rarity):' unrevealed')+(isA?' actioned':'')}
-    onClick={()=>isR?setSel(i):reveal(i)} style={sel===i?{outline:'2px solid var(--orange)',outlineOffset:2}:{}}>
+    onClick={()=>{
+      if(isR){setSel(i)}
+      else if(mode==='single'){revealNext()}
+    }}
+    style={sel===i?{outline:'2px solid var(--orange)',outlineOffset:2}:{}}>
     {isR&&<img src={p.card.imgUrl} alt={p.card.name} onError={e=>{e.target.style.display='none'}}/>}
   </div>)})}</div>
-  {!allRev&&<button className="btn-orange" onClick={revealAll} style={{marginBottom:16}}>Reveal All</button>}
+
+  {/* Single mode: tap hint */}
+  {mode==='single'&&!allRev&&<div style={{textAlign:'center',color:'var(--text3)',fontSize:12,marginBottom:12}}>Tap a card to reveal next</div>}
+
   {s&&!acts[sel]&&rev.has(sel)&&<div className="batch-sel">
     <img src={s.card.imgUrl} alt={s.card.name} onError={e=>{e.target.style.display='none'}}/>
     <div className="batch-sel-info"><div className={'rarity-badge r-'+s.card.rarity.replace(/\s/g,'')} style={{marginBottom:4,fontSize:10}}>{s.card.rarity}</div>
